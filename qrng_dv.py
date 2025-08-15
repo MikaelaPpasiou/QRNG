@@ -1,80 +1,27 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from qutip import Bloch, about, basis, mesolve, sigmam, sigmax, sigmay, sigmaz
-from qutip.ipynbtools import plot_animation
+from qiskit import QuantumCircuit, transpile
+from qiskit_aer import AerSimulator
 
-def qubit_integrate(w, theta, gamma1, gamma2, psi0, tlist):
-    # operators and the hamiltonian
-    sx = sigmax()
-    sy = sigmay()
-    sz = sigmaz()
-    sm = sigmam()
-    H = w * (np.cos(theta) * sz + np.sin(theta) * sx)
-    # collapse operators
-    c_op_list = []
-    n_th = 0.5  # temperature
-    rate = gamma1 * (n_th + 1)
-    if rate > 0.0:
-        c_op_list.append(np.sqrt(rate) * sm)
-    rate = gamma1 * n_th
-    if rate > 0.0:
-        c_op_list.append(np.sqrt(rate) * sm.dag())
-    rate = gamma2
-    if rate > 0.0:
-        c_op_list.append(np.sqrt(rate) * sz)
+# qiskit => IBM’s open-source Python framework for working with quantum computers
+# let's you build & simulate quantum circuits 
 
-    # evolve and calculate expectation values
-    output = mesolve(H, psi0, tlist, c_op_list, [sx, sy, sz])
-    return output
-
-w = 1.0 * 2 * np.pi  # qubit angular frequency
-theta = 0.2 * np.pi  # qubit angle from sigma_z axis (toward sigma_x axis)
-gamma1 = 0.5  # qubit relaxation rate
-gamma2 = 0.2  # qubit dephasing rate
-# initial state
-a = 1.0
-psi0 = (a * basis(2, 0) + (1 - a) * basis(2, 1)) / \
-        (np.sqrt(a**2 + (1 - a) ** 2))
-tlist = np.linspace(0, 4, 150)
-
-result = qubit_integrate(w, theta, gamma1, gamma2, psi0, tlist)
-
-def plot_setup(result):
-
-    fig = plt.figure(figsize=(8, 8))
-    axes = fig.add_subplot(111, projection="3d", elev=30, azim=-40)
-
-    return fig, axes
-
-sphere = None
+qc = QuantumCircuit(1, 1)  # QuantumCircuit(number of quantum bits, number of classical bits) => creates a 1-qubit quantum circuit
+qc.h(0)   # applying the Hadamard gate => puts the qubit (index(0)) in a superposition of |0> and |1>
+qc.measure(0, 0)  # measuring the qubit (index(0)) and storing the result in the classical bit (index(0))
 
 
-def plot_result(result, n, fig=None, axes=None):
+backend = AerSimulator()  # aersimulator => simulates quantum circuits, shots=10 => run the entire qc 10 separate times
+transpiled_qc = transpile(qc, backend)  # transpile => convert the quantum circuit to a form suitable for the backend
+job = backend.run(transpiled_qc, shots=1000000)
+result = job.result()
 
-    global sphere
+counts = result.get_counts()
+print("Random bits generated:", counts)
 
-    if fig is None or axes is None:
-        fig, axes = plot_setup(result)
-
-    if not sphere:
-        sphere = Bloch(axes=axes)
-        sphere.vector_color = ["r"]
-
-    sphere.clear()
-    sphere.add_vectors([result.expect[0][n],
-                        result.expect[1][n],
-                        result.expect[2][n]])
-    sphere.add_points(
-        [
-            result.expect[0][: n + 1],
-            result.expect[1][: n + 1],
-            result.expect[2][: n + 1],
-        ],
-        meth="l",
-    )
-    sphere.make_sphere()
-
-    return axes.artists
-
-plot_animation(plot_setup, plot_result, result, writer="ffmpeg", codec=None)
-
+'''
+examples of some runs: 
+Random bits generated: {'1': 499475, '0': 500525}
+Random bits generated: {'1': 499569, '0': 500431}
+Random bits generated: {'0': 500029, '1': 499971}
+Random bits generated: {'1': 499614, '0': 500386}
+Random bits generated: {'0': 500986, '1': 499014}
+'''
