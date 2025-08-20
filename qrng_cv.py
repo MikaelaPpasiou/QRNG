@@ -1,3 +1,11 @@
+'''
+Qiskit-based CV-like QRNG => qiskit’s standard qiskit library is qubit-based, not continuous-variable (CV)
+
+building a discrete qubit system with n_qubits, where the amplitudes are taken from a discretized Gaussian (from gaussian_amplitudes
+
+=> not true cv qrng 
+'''
+
 import hashlib
 from typing import List, Tuple
 
