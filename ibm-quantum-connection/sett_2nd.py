@@ -5,8 +5,8 @@ from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 # 1) Connect to IBM Quantum (only once!)
 service = QiskitRuntimeService(
     channel="ibm_cloud",
-    token="MVe5phDGE9XbcDg3SoVmMYCMCiFxH178gYk7CkaKq3hK",
-    instance="crn:v1:bluemix:public:quantum-computing:us-east:a/77e4bd4e9fcb4f6b83714ce02037a001:14996580-386a-4a73-8b95-f445d9653efc::",
+    token="",
+    instance="",
 )
 
 available_backends = service.backends()
