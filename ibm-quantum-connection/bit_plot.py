@@ -5,11 +5,11 @@ import scienceplots
 
 plt.style.use('science')
 
-filename = "qrng_bits.txt"  
+filename = 'qrng_bits.txt'
 with open(filename, "r") as f:
     bits = f.read().strip()
 
-bits = [int(b) for b in bits if b in "01"]
+bits = [int(b) for b in bits if b in '01']
 
 n_bits = len(bits)
 size = math.ceil(math.sqrt(n_bits))
